@@ -2,6 +2,7 @@ import torch.nn as nn
 import numpy as np
 import pandas as pd
 import torch
+import pickle
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
 from tqdm.auto import trange, tqdm
