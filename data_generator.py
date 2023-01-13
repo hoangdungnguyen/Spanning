@@ -49,7 +49,7 @@ class DataGenerator:
     def sample_lognormal(self,N, seed = None):
         diff = np.random.RandomState(seed).multivariate_normal(
                                 np.zeros(self.input_dim), self.Cov_matrix, size = N)
-        X = self.S0.reshape(1,-1)*np.exp((self.r-self.sigma_vector.reshape(1,-1)**2/2)*self.T + np.sqrt(self.T)*diff)
+        X = self.S0.reshape(1,-1)*np.exp((self.r-self.sigma_vector.reshape(1,-1)**2/2)*self.T + self.sigma_vector.reshape(1,-1)*np.sqrt(self.T)*diff)
         X = torch.tensor(X, dtype=torch.float32)
         Y = self.pay_func(X)
         return X, Y

@@ -16,7 +16,7 @@ class NN_SingleAsset(nn.Module):
         init_basket = torch.as_tensor(init_basket, dtype=torch.float32)
 
         self.w = nn.Parameter(init_basket)
-        self.k = nn.Parameter(torch.ones((1, self.units)))
+        self.k = nn.Parameter(torch.zeros((1, self.units)))
         self.delta = nn.Parameter(
             torch.normal(mean=0.,
                          std=math.sqrt(2 / (1 + self.units)),
@@ -55,7 +55,7 @@ class NN_Longonly(nn.Module):
         init_basket = torch.as_tensor(init_basket, dtype=torch.float32)
 
         self.w = nn.Parameter(init_basket)
-        self.k = nn.Parameter(torch.ones((1, self.units)))
+        self.k = nn.Parameter(torch.zeros((1, self.units)))
         self.delta = nn.Parameter(
             torch.normal(mean=0.,
                          std=math.sqrt(2 / (1 + self.units)),
@@ -122,7 +122,7 @@ class NN(nn.Module):
         init_basket = torch.as_tensor(init_basket, dtype=torch.float32)
 
         self.w = nn.Parameter(init_basket)
-        self.k = nn.Parameter(torch.ones((1, self.units)))
+        self.k = nn.Parameter(torch.zeros((1, self.units)))
         self.delta = nn.Parameter(
             torch.normal(mean=0.,
                          std=math.sqrt(2 / (1 + self.units)),
@@ -143,7 +143,7 @@ class NN(nn.Module):
 
     def forward(self, x):
         xx = self.activation(self.delta *
-                             (torch.matmul(x, self.w) - torch.abs(self.k)))
+                             (torch.matmul(x, self.w) - torch.exp(self.k)))
         xx = self.batchnorm(xx)
 
         xx = torch.matmul(xx, self.v) + self.batchnorm2(self.linear(x))

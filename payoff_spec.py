@@ -53,7 +53,7 @@ BOP_dict = {
 }
 
 BOBP_dict = {
-    'pay_func': lambda X: F.relu(1. - torch.max(X, dim=1, keepdims=True)[0]),
+    'pay_func': lambda X: 1.*(1. > torch.max(X, dim=1, keepdims=True)[0]),
     'lb2': -2.,
     'ub2': 2.,
     'lb3': -2.,
@@ -165,7 +165,7 @@ DC_dict = {
 }
 
 DP_dict = {
-    'pay_func': lambda X: F.relu(torch.mean(torch.abs(X), dim = 1, keepdims = True) -1),
+    'pay_func': lambda X: F.relu(1 - torch.mean(torch.abs(X), dim = 1, keepdims = True)),
     'lb2': -2.,
     'ub2': 2.,
     'lb3': -2.,

@@ -54,50 +54,58 @@ class SpanningEngine(nn.Module):
     def fit_LS_regular(self, X_train, y_train):
         X_train = np.array(X_train)
         y_train = np.array(y_train)
-        self.scaler_y_uniform = StandardScaler(with_mean=False)
-        self.scaler_x_uniform = StandardScaler(with_mean=False)
+        self.scaler_y_regular = StandardScaler(with_mean=True)
+        self.scaler_x_regular = StandardScaler(with_mean=True)
 
-        X_train = np.maximum(
+        X_train = np.concatenate([X_train, np.maximum(
             np.matmul(X_train,
-                      self.y_regular.numpy().T) - self.strike, 0)
+                      self.y_regular.numpy().T) - self.strike, 0)],
+                                 axis =1)
 
-        self.LS_regular = LinearRegression(fit_intercept=False)
-        self.LS_regular.fit(self.scaler_x_uniform.fit_transform(X_train),
-                            self.scaler_y_uniform.fit_transform(y_train))
+        self.LS_regular = LinearRegression(fit_intercept=True)
+        self.LS_regular.fit(self.scaler_x_regular.fit_transform(X_train),
+                            self.scaler_y_regular.fit_transform(y_train))
 
         print('Model with regular weights is calibrated by SVD')
 
     def predict_LS_regular(self, X):
         X = np.array(X)
-        X = np.maximum(np.matmul(X, self.y_regular.numpy().T) - self.strike, 0)
+        X = np.concatenate([X_train, np.maximum(
+            np.matmul(X_train,
+                      self.y_regular.numpy().T) - self.strike, 0)],
+                                 axis =1)
 
-        pred = self.scaler_y_uniform.inverse_transform(
-            self.LS_regular.predict(self.scaler_x_uniform.transform(X)))
+        pred = self.scaler_y_regular.inverse_transform(
+            self.LS_regular.predict(self.scaler_x_regular.transform(X)))
 
         return pred
 
     def fit_LS_uniform(self, X_train, y_train):
         X_train = np.array(X_train)
         y_train = np.array(y_train)
-        self.scaler_y_random = StandardScaler(with_mean=False)
-        self.scaler_x_random = StandardScaler(with_mean=False)
+        self.scaler_y_uniform = StandardScaler(with_mean=True)
+        self.scaler_x_uniform = StandardScaler(with_mean=True)
 
-        X_train = np.maximum(
+        X_train = np.concatenate([X_train, np.maximum(
             np.matmul(X_train,
-                      self.y_uniform.numpy().T) - self.strike, 0)
+                      self.y_uniform.numpy().T) - self.strike, 0)],
+                                 axis =1)
 
-        self.LS_uniform = LinearRegression(fit_intercept=False)
-        self.LS_uniform.fit(self.scaler_x_random.fit_transform(X_train),
-                            self.scaler_y_random.fit_transform(y_train))
+        self.LS_uniform = LinearRegression(fit_intercept=True)
+        self.LS_uniform.fit(self.scaler_x_uniform.fit_transform(X_train),
+                            self.scaler_y_uniform.fit_transform(y_train))
 
         print('Model with random weights is calibrated by SVD')
 
     def predict_LS_uniform(self, X):
         X = np.array(X)
-        X = np.maximum(np.matmul(X, self.y_uniform.numpy().T) - self.strike, 0)
+        X = np.concatenate([X_train, np.maximum(
+            np.matmul(X_train,
+                      self.y_uniform.numpy().T) - self.strike, 0)],
+                                 axis =1)
 
-        pred = self.scaler_y_random.inverse_transform(
-            self.LS_uniform.predict(self.scaler_x_random.transform(X)))
+        pred = self.scaler_y_uniform.inverse_transform(
+            self.LS_uniform.predict(self.scaler_x_uniform.transform(X)))
 
         return pred
 
@@ -116,6 +124,7 @@ class SpanningEngine(nn.Module):
         
         self.fit_LS_regular(X_train, y_train)
         self.fit_LS_uniform(X_train, y_train)
+        
         X_train = torch.tensor(X_train, dtype=torch.float32)
         y_train = torch.tensor(y_train, dtype=torch.float32)
         self.X_mean = torch.maximum(X_train.mean(dim=0, keepdim=True),
@@ -176,7 +185,7 @@ class SpanningEngine(nn.Module):
             report_table[i, 5] = MAE(pred, y_test)
             resi_abs = abs(y_test - pred).numpy()  
             report_table[i, 7] = np.quantile(resi_abs, 0.95)
-            report_table[i, 9] = (resi_abs[resi_abs >= report_table[i, 6]]).mean()
+            report_table[i, 9] = (resi_abs[resi_abs >= report_table[i, 7]]).mean()
 
         report_table[:, 10] = self.N_basket
         report_table[:, 11] = self.input_dim
